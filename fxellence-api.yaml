@@ -1,0 +1,335 @@
+openapi: 3.0.0
+info:
+  title: FXellence Payment APIs v1.0
+  version: 1.0.0
+  description: "\n\n## \U0001F4AB Overview\n\nFXellence Payment APIs are used by the online application and/or clients to integrate with the FXellence backend systems that are used for processing international payments. There are 2 types of APIs available, 1) Authorized APIs, these APIs need a valid Auth token, 2) Service APIs, which don't require Auth token but work with the service secrets (service secrets are shared text between the calling application and payment APIs to protecting direct public access to these APIs). \n\n### \U0001F9F0 Cross-Origin Resource Sharing\nThis API features Cross-Origin Resource Sharing (CORS) implemented in compliance with  [W3C spec](https://www.w3.org/TR/cors/). CORS support is necessary to make calls from the request maker within the API docs.\n\n### \U0001F3C1 How to test our APIs\nTBD "
+  contact:
+    name: Support
+    email: support@fxellence.com
+    url: 'https://www.fxellence.com/support'
+  license:
+    name: 
+    url: 
+  termsOfService: 
+servers:
+  - url: 'https://api.fxellence.com'
+    description: Production
+  - description: Demo
+    url: 'https://demo-api.fxellence.com'
+paths:
+  /conversion/v2/public/api/currency/list:
+    get:
+      summary: Get list of Currencies
+      tags:
+        - Conversion
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Currency'
+              examples:
+                Example User:
+                  $ref: '#/components/examples/currency'    
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'  
+      operationId: currency-list
+      description: |-
+        Get list of currencies with other meta data like currency symbol, description, decimal digits along with county code and system parameters like whether this currency is base currency or not etc. 
+      security:
+        - Service Key: []
+  /conversion/v2/public/api/rate/{base_currency_code}:  
+    get:
+      summary: Get Market Rate
+      operationId: currency-rate
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rate'
+              examples:
+                Example User:
+                  $ref: '#/components/examples/rate'   
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'        
+      description: Choose base currency and the endpoint will return the conversion rates from your base currency code to all the other active currencies 
+      parameters:
+        - name: base_currency_code
+          in: path
+          required: true
+          schemas:
+            type: string
+          description: ISO code for base currency 
+      tags:
+        - Conversion
+      security:
+        - Service Key: []
+  /conversion/v2/api/conversions/create:    
+    post:
+      summary: Create Rate Conversion
+      operationId: create-rate-conversion
+      responses:
+        '201':
+          description: Conversion Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Conversion'
+              examples:
+                Example Conversion:
+                  $ref: '#/components/examples/conversion'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      description: Get a detailed, tradable rate quote to convert money from one currency to another
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConversionReq'
+            examples: 
+              Example Conversion requestBody:
+                $ref: '#/components/examples/conversionReq'
+      tags:
+        - Conversion
+      security:
+        - Auth Token: []
+
+components:
+  schemas:
+    Rate:
+      description: The exchange rates from base currency code to all the other currencies
+      type: object
+      title: Rate
+      properties:
+        result:
+          type: string
+          description: Successful fetch from the backend systems
+        time_last_update_utc:
+          type: string
+          description: last fetch time for the market rates
+        base_code:
+          type: string
+          description: ISO currency code for base currency
+        conversion_rates:
+          type: object
+          description: list of currency code and corresponding market rate against the base currency
+    Currency:
+      description: Currency schema
+      type: object
+      title: Currency
+      properties:
+        code: 
+          type: string
+          description: ISO Currency code
+        name: 
+          type: string
+          description: Currency name
+        name_plural:
+          type: string
+          description: Currency in plural
+        symbol:
+          type: string
+          description: Currency symbol
+        decimal_digits:
+          type: string
+        rounding:
+          type: string
+        country_code:
+          type: sting
+          description: ISO Country Code
+        base_currency_flag:
+          type: boolean
+          description: flag to indicate whether currency is a base currency ot not (base currencies can be used in "send currency or from currency field")
+        active_currency_flag:
+          type: boolean
+          description: flag to indicate whether currency is available
+        top_currency_flag:
+          type: boolean
+          description: To show in the top currency list
+    ConversionReq:
+      description: Request body for rate conversion api
+      type: object
+      title: Rate Conversion Request
+      properties:
+        buy_currency: 
+          type: string
+          description: ISO code for buy currency
+        sell_currency: 
+          type: string
+          description: ISO code for sell currency
+        fixed_side:
+          enum: [buy, sell]
+          description: Providing whether to convert into buy currency or sell currency
+        amount:
+          type: number
+          description: Amount to be converted
+      required:
+        - buy_currency
+        - sell_currency
+        - fixed_side
+        - amount
+    Conversion: 
+      description: Rate conversion details
+      type: object
+      title: conversion
+      properties:
+        id:
+          type: string
+          description: Rate conversion UUID
+        settlement_date:
+          type: string
+          description: The date and time by which funds need to be available to settle the trade.  
+        conversion_date:
+          type: string
+          description: The date the rate conversion will be made.
+        currency_pair:
+          type: string
+          description: Concatenated string of the two currencies traded, eg. "USDEUR".
+        status:
+          type: string
+          description: Current rate conversion status.
+        buy_currency:
+          type: string
+          description: Three character ISO code for the currency being bought.
+        sell_currency:
+          type: string
+          description: Three character ISO code for the currency being sold.
+        client_buy_amount:
+          type: string
+          description: The amount of buy currency for a client.
+        client_sell_amount:
+          type: string
+          description: The amount of sell currency for a client.
+        fixed_side:
+          enum: [buy, sell]
+          description: Which currency side is fixed - the buy or sell one.
+        core_rate:
+          type: string
+          description: The market rate.
+        client_rate:
+          type: string
+          description: The rate that will be returned to your customer after all spread has been applied.
+        mid_market_rate:
+          type:
+          description: The midpoint between the buy and sell rates.  
+  securitySchemes:
+    Auth Token:
+      name: Authorization
+      type: apiKey
+      in: header
+      description: "Fxellence APIs are protected using Auth0 user authenticated token, User will have to authenticate using their credentials to get the valid token that will be passed as a Token in all protected APIs. APIs will then call Auth0 token validation endpoint to validate the Token and based on the outcome, it will process the request.\n\nTo generate the API token without having to use user credentials, you can use Machine-to-Machine credentials (Please contact support to generate M2M credentials for you).\n\nYou need the following values to generate the auth token:\nclient_id\nclient_secret\naudience\ngrant_type\n\nOnce you have all of these details, you can then submit a POST request to the following URL to get the auth token:\n\nhttps://fxellence.eu.auth0.com/oauth/token\n\nThis will return a Bearer token with expiry time."
+    Service Key:
+      name: Authorization
+      type: apiKey
+      in: header
+      description: "Service secret is required to access Service APIs, which don't require Auth token but work with the service secrets (service secrets are shared string between the calling application and payment APIs to protect direct public access to these APIs). \n\nService Secret will be passed as part of the Authorization header.\n\nAuthorization: {secret_value}"  
+
+  parameters:  
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            title: Error
+            type: object
+            description: A standard error object.
+            x-tags:
+              - Common
+            properties:
+              status:
+                type: string
+                description: A code.
+              error:
+                type: string
+            required:
+              - status
+              - error
+    Unauthorized:
+      description: Unauthorized Access 
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+            required:
+              - message
+  examples:
+    currency:
+      value:
+        - code: GBP,
+          name: British Pound Sterling,
+          name_plural: British pounds sterling,
+          symbol: £,
+          symbol_native": £,
+          decimal_digits: 2,
+          rounding": 0,
+          country_code: GB,
+          country_name: United Kingdom,
+          base_currency_flag: false,
+          active_currency_flag: true,
+          top_currency_flag: false
+        - code: USD,
+          name: US Dollar,
+          name_plural: US dollars,
+          symbol: $,
+          symbol_native: $,
+          decimal_digits: 2,
+          rounding: 0,
+          country_code: US,
+          country_name: United States,
+          base_currency_flag: false,
+          active_currency_flag: true,
+          top_currency_flag: false 
+    rate:
+      value:
+        result: success,
+        time_last_update_utc:  Wed, 19 Jul 2023 00:00:01 +0000,
+        base_code: GBP
+        conversion_rates:
+          USD: 1.3055,
+          EUR: 1.1626,
+          FJD: 2.8727,
+          MXN: 21.8597,
+          SCR: 17.4269,
+          TVD: 1.9163,
+          CDF: 3258.5285,
+          BBD: 2.6117,
+          GTQ: 10.2683,
+          CLP: '1071.1356'
+    conversionReq:
+      value:
+        buyCurrency: EUR,
+        sellCurrency: GBP,
+        fixedSide: sell,
+        amount: 10000,
+    Conversion:
+      value:
+        conversion_id: 65bdeb4f-fed7-447b-9f99-7c7863e92db1,
+        settlement_date: 2023-07-18T13:30:00.000+00:00,
+        conversion_date: 2023-07-18T00:00:00.000+00:00,
+        status: created,
+        currency_pair: EURGBP,
+        buy_currency: EUR,
+        sell_currency: GBP,
+        fixed_side: sell,
+        client_buy_amount: 12411.57,
+        client_sell_amount: 10000.00,
+        mid_market_rate: 0.8056,
+        core_rate: 0.8057,
+        client_rate: '0.8057'
+tags:
+  - name: fxellence
