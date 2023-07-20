@@ -179,9 +179,9 @@ components:
         - fixed_side
         - amount
     Conversion: 
-      description: Rate conversion details
+      description: Rate conversion response details
       type: object
-      title: Rate Conversion
+      title: Rate Conversion Response
       properties:
         id:
           type: string
