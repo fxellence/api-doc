@@ -86,7 +86,7 @@ paths:
                 $ref: '#/components/schemas/Conversion'
               examples:
                 Example Conversion:
-                  $ref: '#/components/examples/conversion'
+                  $ref: '#/components/examples/Conversion'
         '404':
           $ref: '#/components/responses/NotFound'
         '401':
@@ -104,7 +104,6 @@ paths:
         - Conversion
       security:
         - Auth Token: []
-
 components:
   schemas:
     Rate:
@@ -182,7 +181,7 @@ components:
     Conversion: 
       description: Rate conversion details
       type: object
-      title: conversion
+      title: Conversion
       properties:
         id:
           type: string
