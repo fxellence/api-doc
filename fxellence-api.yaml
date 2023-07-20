@@ -21,7 +21,7 @@ paths:
     get:
       summary: Get list of Currencies
       tags:
-        - Conversion
+        - Rate Conversion
       responses:
         '200':
           description: OK
@@ -70,7 +70,7 @@ paths:
             type: string
           description: ISO code for base currency 
       tags:
-        - Conversion
+        - Rate Conversion
       security:
         - Service Key: []
   /conversion/v2/api/conversions/create:    
@@ -101,7 +101,7 @@ paths:
               Example Conversion requestBody:
                 $ref: '#/components/examples/conversionReq'
       tags:
-        - Conversion
+        - Rate Conversion
       security:
         - Auth Token: []
 components:
@@ -126,7 +126,7 @@ components:
     Currency:
       description: Currency schema
       type: object
-      title: Currency
+      title: Currencies
       properties:
         code: 
           type: string
@@ -181,7 +181,7 @@ components:
     Conversion: 
       description: Rate conversion details
       type: object
-      title: Conversion
+      title: Rate Conversion
       properties:
         id:
           type: string
