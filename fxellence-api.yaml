@@ -173,11 +173,25 @@ components:
         amount:
           type: number
           description: Amount to be converted
+        conversion_date:
+          type: String
+          description: Earliest delivery date in UTC time zone. Format YYYY-MM-DD.
+        reason:
+          type: string
+          description: User provided reason for conversion
+        unique_request_id:
+          type: string
+          description: User-generated idempotence key. Beneficial for request tracking / management.    
+        on_behalf_of:
+          type: string
+          description: A contact client/user id for the sub-acccount you're acting on behalf of.       
       required:
         - buy_currency
         - sell_currency
         - fixed_side
         - amount
+        - reason
+        - unique_request_id
     Conversion: 
       description: Rate conversion response details
       type: object
