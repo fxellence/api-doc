@@ -17,11 +17,11 @@ servers:
   - description: Demo
     url: 'https://demo-api.fxellence.com'
 paths:
-  /conversion/v2/public/api/currency/list:
+  /fx-rate/v2/public/api/currency/list:
     get:
       summary: Get list of Currencies
       tags:
-        - Rate Conversion
+        - FX Rate
       responses:
         '200':
           description: OK
@@ -43,7 +43,7 @@ paths:
         Get list of currencies with other meta data like currency symbol, description, decimal digits along with county code and system parameters like whether this currency is base currency or not etc. 
       security:
         - Service Key: []
-  /conversion/v2/public/api/rate/{base_currency_code}:  
+  /fx-rate/v2/public/api/rate/{base_currency_code}:  
     get:
       summary: Get Market Rate
       operationId: currency-rate
@@ -70,10 +70,10 @@ paths:
             type: string
           description: ISO code for base currency 
       tags:
-        - Rate Conversion
+        - FX Rate
       security:
         - Service Key: []
-  /conversion/v2/api/conversions/create:    
+  /fx-rate/v2/api/conversions/create:    
     post:
       summary: Create Rate Conversion
       operationId: create-rate-conversion
@@ -101,9 +101,42 @@ paths:
               Example Conversion requestBody:
                 $ref: '#/components/examples/conversionReq'
       tags:
-        - Rate Conversion
+        - FX Rate
       security:
         - Auth Token: []
+  /fx-rate/v2/api/rate/alert/{fx_user_id}/list:
+    get:
+      summary: Get the list of fx-rate alerts available for a fx-user
+      tags:
+        - FX Rate
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RateAlerts'
+              examples:
+                Example User:
+                  $ref: '#/components/examples/RateAlertList'    
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'  
+      operationId: alert-list
+      description: |-
+        Get the list of fx-rate alerts (active or disabled) available for a fx-user
+      parameters:
+        - name: fx_user_id
+          in: path
+          required: true
+          schemas:
+            type: string
+          description: fx_user_id is a unique id that represent client's user 
+      security:
+        - Service Key: []
 components:
   schemas:
     Rate:
