@@ -104,9 +104,9 @@ paths:
         - FX Rate
       security:
         - Auth Token: []
-  /fx-rate/v2/api/rate/alert/{fx_user_id}/list:
+  /fx-rate/v2/api/rate/user/{fx_user_id}/alert/list:
     get:
-      summary: Get the list of fx-rate alerts available for a fx-user
+      summary: List Rate Alerts
       tags:
         - FX Rate
       responses:
@@ -117,10 +117,10 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/RateAlerts'
+                  $ref: '#/components/schemas/RateAlert'
               examples:
                 Example User:
-                  $ref: '#/components/examples/RateAlertList'    
+                  $ref: '#/components/examples/ListRateAlert'    
         '404':
           $ref: '#/components/responses/NotFound'
         '401':
@@ -137,6 +137,127 @@ paths:
           description: fx_user_id is a unique id that represent client's user 
       security:
         - Service Key: []
+  /fx-rate/v2/api/rate/alert/{alert_id}:
+    get:
+      summary: Get Rate Alert
+      tags:
+        - FX Rate
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RateAlert'
+              examples:
+                Example User:
+                  $ref: '#/components/examples/RateAlert'    
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'  
+      operationId: rate-alert
+      description: |-
+        Get the fx-rate alert (active or disabled)
+      parameters:
+        - name: alert_id
+          in: path
+          required: true
+          schemas:
+            type: string
+          description: alert_id is a unique id that represent alert object 
+      security:
+        - Service Key: []
+  /fx-rate/v2/api/rate/alert/create:
+    post:
+      summary: Create Rate Alert
+      tags:
+        - FX Rate
+      responses:
+        '201':
+          description: Rate Alert Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RateAlertCreateRes'
+              examples:
+                Example User:
+                  $ref: '#/components/examples/RateAlertCreateResExample'    
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RateAlertCreateReq'
+            examples: 
+              Example Conversion requestBody:
+                $ref: '#/components/examples/RateAlertCreateReqExample'      
+      operationId: create-rate-alert
+      description: |-
+        Create fx rate alert for an fs user
+      security:
+        - Service Key: []
+  /fx-rate/v2/api/rate/alert/{alert_id}/delete:
+    delete:
+      summary: Delete Rate Alert
+      tags:
+        - FX Rate
+      responses:
+        '204':
+          description: No Content (Alert deleted)
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'  
+      operationId: delete-rate-alert
+      description: |-
+        Delete fx-rate alert
+      parameters:
+        - name: alert_id
+          in: path
+          required: true
+          schemas:
+            type: string
+          description: alert_id is a unique id that represent alert object 
+      security:
+        - Service Key: []
+  /fx-rate/v2/api/rate/alert/update:
+    put:
+      summary: Update Rate Alert
+      tags:
+        - FX Rate
+      responses:
+        '201':
+          description: Rate Alert Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RateAlert'
+              examples:
+                Example User:
+                  $ref: '#/components/examples/RateAlert' 
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RateAlertUpdateReq'
+            examples: 
+              Example Conversion requestBody:
+                $ref: '#/components/examples/RateAlertUpdateReqExample'            
+      operationId: update-rate-alert
+      description: |-
+        Update fx-rate alert
+      security:
+        - Service Key: []
+
+
 components:
   schemas:
     Rate:
@@ -269,6 +390,111 @@ components:
         mid_market_rate:
           type:
           description: The midpoint between the buy and sell rates.  
+    RateAlert:
+      description: Rate alert for an fx-user
+      type: object
+      title: Rate Alerts
+      properties:
+        alert_id:
+          type: string
+          description: rate alert unique id
+        currency_pair:
+          type: string
+          description: from and to currency pair
+        frequency:
+          enum: [daily, weekly]
+          description: Alert will be sent either Daily or weekly
+        start_datetime:
+          type: string
+          description: when alert was first started
+        end_datetime:
+          type: string
+          description: when last alert will be sent before it will be disabled
+        target_rate: 
+          type: number
+          description: trigger will be fired when the current rate will be greater than target_rate
+        alert_name:
+          type: string
+          description: unique name of the rate alert
+        delivery_method:
+          enum: [email, sms]
+          description: alert will be either sent to email or SMS
+        status: 
+          type: string
+          description: Rate alert current status (Created, Active, Disabled, Deleted)  
+    RateAlertCreateReq:
+      description: Create rate alert for an fx-user
+      type: object
+      title: Create rate alert request
+      properties:
+        fx_user_id:
+          type: string
+          description: fx user who is creating rate alert
+        currency_pair:
+          type: string
+          description: from and to currency pair
+        frequency:
+          enum: [daily, weekly]
+          description: Alert will be sent either Daily or weekly
+        target_rate: 
+          type: number
+          description: trigger will be fired when the current rate will be greater than target_rate
+        alert_name:
+          type: string
+          description: unique name of the rate alert
+        delivery_method:
+          enum: [email, sms]
+          description: alert will be either sent to email or SMS
+      required:
+        - fx_user_id
+        - currency_pair
+        - frequency
+        - alert_name
+        - delivery_method     
+    RateAlertCreateRes:
+      description: Response object for create rate alert
+      type: object
+      title: Create rate alert response
+      properties:
+        alert_id:
+          type: string
+          description: rate alert unique id
+        status: 
+          type: string
+          description: Rate alert current status (Created, Active, Disabled, Deleted)  
+    RateAlertUpdateReq:
+      description: Update rate alert for an fx-user
+      type: object
+      title: Update rate alert request
+      properties:
+        alert_id:
+          type: string
+          description: rate alert unique id
+        fx_user_id:
+          type: string
+          description: fx user who is creating rate alert
+        currency_pair:
+          type: string
+          description: from and to currency pair
+        frequency:
+          enum: [daily, weekly]
+          description: Alert will be sent either Daily or weekly
+        target_rate: 
+          type: number
+          description: trigger will be fired when the current rate will be greater than target_rate
+        alert_name:
+          type: string
+          description: unique name of the rate alert
+        delivery_method:
+          enum: [email, sms]
+          description: alert will be either sent to email or SMS
+        status:
+          type: string
+          description: Rate alert current status (Created, Active, Disabled, Deleted)  
+      required:
+        - alert_id
+        - fx_user_id
+
   securitySchemes:
     Auth Token:
       name: Authorization
@@ -377,5 +603,60 @@ components:
         mid_market_rate: 0.8056,
         core_rate: 0.8057,
         client_rate: '0.8057'
+    ListRateAlert:
+      value:
+        - alert_id: 23jr237hkb237r273
+          currency_pair: GBPEUR
+          fx_user_id : dasd76a7sd6ad7qg7
+          frequency: Weekly
+          email : test_user@example.com
+          start_datetime: 07/08/2023
+          end_datetime: 31/08/2023
+          target_rate: 1.21
+          alert_name: TestAlert001
+          status: active
+        - alert_id: jkshd723bb8
+          currency_pair: GBPINR
+          fx_user_id : dasd76a7sd6ad7qg7
+          frequency: Daily
+          email : user001@example.com
+          start_datetime: 07/08/2023
+          end_datetime: 31/08/2023
+          target_rate: 1.21
+          alert_name: TestAlert002
+          status: disabled
+    RateAlert:
+      value:
+        alert_id: 23jr237hkb237r273
+        currency_pair: GBPEUR
+        fx_user_id : dasd76a7sd6ad7qg7
+        frequency: Weekly
+        email : test_user@example.com
+        start_datetime: 07/08/2023
+        end_datetime: 31/08/2023
+        target_rate: 1.21
+        alert_name: TestAlert001
+        status: active 
+    RateAlertCreateReqExample:
+      value:
+        currency_pair: GBPEUR
+        fx_user_id : dasd76a7sd6ad7qg7
+        frequency: Weekly,
+        target_rate: 1.21,
+        alert_name: TestAlert001
+    RateAlertCreateResExample:
+        value:
+          alert_id: 23jr237hkb237r273
+          status: Active
+    RateAlertUpdateReqExample:
+      value:
+        alert_id: 23jr237hkb237r273
+        currency_pair: GBPEUR
+        fx_user_id : dasd76a7sd6ad7qg7
+        frequency: Weekly,
+        target_rate: 1.21,
+        alert_name: TestAlert001
+        status: disabled      
+
 tags:
   - name: fxellence
